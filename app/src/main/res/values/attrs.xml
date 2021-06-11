@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="defaultMainBackground" format="reference" />
+    <attr name="defaultNavBackground" format="reference" />
+    <attr name="defaultOverlayBackground" format="reference" />
+    <attr name="defaultBackgroundColor" format="reference" />
+    <attr name="defaultMainGradientDarkColor" format="reference" />
+    <attr name="defaultMainGradientLightColor" format="reference" />
+    <attr name="defaultDarkGradientDarkColor" format="reference" />
+    <attr name="defaultDarkGradientLightColor" format="reference" />
+    <attr name="defaultTitleColor" format="reference" />
+    <attr name="defaultInfoColor" format="reference" />
+    <attr name="defaultSecInfoColor" format="reference" />
+    <attr name="defaultInfoHighLightColor" format="reference" />
+    <attr name="defaultInfoAccentColor" format="reference" />
+    <attr name="defaultInfoIconBackgroundColor" format="reference" />
+    <attr name="defaultCheckBackgroundColor" format="reference" />
+    <attr name="defaultSemiTransparentColor" format="reference" />
+    <attr name="defaultStrokeColor" format="reference" />
+    <attr name="defaultActionBackground" format="reference" />
+    <attr name="defaultActionTitleColor" format="reference" />
+    <attr name="inverseBackgroundColor" format="reference" />
+    <attr name="inverseTitleColor" format="reference" />
+    <attr name="inverseInfoColor" format="reference" />
+
+    <attr name="defaultInfoSize" format="reference" />
+</resources>

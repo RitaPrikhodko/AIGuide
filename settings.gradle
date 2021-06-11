@@ -1,0 +1,2 @@
+rootProject.name = "WatchPlaces"
+include ':app'

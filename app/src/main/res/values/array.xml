@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pick_image">
+        <item>@string/pick_gallery</item>
+        <item>@string/pick_camera</item>
+    </string-array>
+    <string-array name="pick_video">
+        <item>@string/pick_from_gallery</item>
+        <item>@string/pick_from_camera</item>
+    </string-array>
+
+    <string-array name="submit_status_labels">
+        <item>Passed</item>
+        <item>Failed</item>
+        <item>Review</item>
+        <item>Pro Review</item>
+        <item>Local</item>
+    </string-array>
+</resources>

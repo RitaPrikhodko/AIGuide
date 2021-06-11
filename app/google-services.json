@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1048498346663",
+    "project_id": "watchplaces-d17d5",
+    "storage_bucket": "watchplaces-d17d5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048498346663:android:86296e161e0ae42f121982",
+        "android_client_info": {
+          "package_name": "com.mproduction.watchplaces"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048498346663-ar3aoss1ba8h2egrjskp26ajb3kovj7p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-9-hsEYiQD0cyj_IXFOW_L8Rz_SUHH6Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048498346663-ar3aoss1ba8h2egrjskp26ajb3kovj7p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
