@@ -24,11 +24,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mproduction.watchplaces.R;
 import com.mproduction.watchplaces.databinding.ActivityMapsBinding;
+import com.mproduction.watchplaces.model.ScrimitDataModel;
 import com.mproduction.watchplaces.model.ScrimitLocationModel;
 import com.mproduction.watchplaces.services.ScrimitTrackService;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, ScrimitLocationModel.ScrimitLocationListener {
     protected ScrimitLocationModel locationModel;
+    protected ScrimitDataModel dataModel;
 
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
@@ -72,6 +74,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         locationModel = ScrimitLocationModel.getInstance();
         locationModel.setLocationListener(this);
+        dataModel = ScrimitDataModel.getInstance("");
+        dataModel.listenData();
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -80,6 +84,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ScrimitDataModel.clearInstance();
     }
 
     protected void toggleTracking() {

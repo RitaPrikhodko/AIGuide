@@ -89,6 +89,32 @@
 
             </LinearLayout>
 
+            <RelativeLayout
+                android:id="@+id/check_btn"
+                android:layout_below="@id/header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_4sdp"
+                android:layout_marginBottom="@dimen/_4sdp"
+                android:visibility="gone"
+                android:clickable="true">
+
+                <ImageView
+                    android:layout_width="@dimen/_46sdp"
+                    android:layout_height="@dimen/_46sdp"
+                    android:src="@drawable/blue_badge_circle" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:textSize="@dimen/_10sdp"
+                    android:textAllCaps="true"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:text="@string/check_label" />
+            </RelativeLayout>
+
             <LinearLayout
                 android:id="@+id/footer"
                 android:layout_width="wrap_content"
@@ -204,13 +230,26 @@
                         android:focusable="true" />
 
                     <ImageView
+                        android:id="@+id/rewind_button"
+                        android:layout_width="@dimen/_24sdp"
+                        android:layout_height="@dimen/_24sdp"
+                        android:layout_marginTop="@dimen/_2sdp"
+                        android:layout_marginBottom="@dimen/_2sdp"
+                        android:layout_marginStart="@dimen/_4sdp"
+                        android:layout_marginEnd="@dimen/_4sdp"
+                        android:src="@drawable/rewind_blue_24dp"
+                        android:clickable="true"
+                        android:background="@drawable/clickable_bg"
+                        android:focusable="true" />
+
+                    <ImageView
                         android:id="@+id/skip_button"
                         android:layout_width="@dimen/_24sdp"
                         android:layout_height="@dimen/_24sdp"
                         android:layout_marginTop="@dimen/_2sdp"
                         android:layout_marginBottom="@dimen/_2sdp"
-                        android:layout_marginStart="@dimen/_8sdp"
-                        android:layout_marginEnd="@dimen/_4sdp"
+                        android:layout_marginStart="@dimen/_4sdp"
+                        android:layout_marginEnd="@dimen/_8sdp"
                         android:src="@drawable/skip_red_24dp"
                         android:clickable="true"
                         android:background="@drawable/clickable_bg"

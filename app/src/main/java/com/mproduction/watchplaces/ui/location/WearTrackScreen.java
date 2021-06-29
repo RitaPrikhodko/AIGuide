@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -22,18 +23,29 @@ import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.database.DatabaseError;
 import com.mproduction.watchplaces.R;
-import com.mproduction.watchplaces.data.TrackCardRecord;
+import com.mproduction.watchplaces.data.LikeData;
+import com.mproduction.watchplaces.data.PhotoItem;
+import com.mproduction.watchplaces.data.PlaceItem;
+import com.mproduction.watchplaces.data.PlaceType;
+import com.mproduction.watchplaces.model.FirebaseDatabaseListener;
+import com.mproduction.watchplaces.model.ScrimitDataModel;
 import com.mproduction.watchplaces.model.ScrimitLocationModel;
-import com.mproduction.watchplaces.ui.stackview.TrackCardsAdapter;
+import com.mproduction.watchplaces.ui.stackview.PhotoItemAdapter;
 import com.yuyakaido.android.cardstackview.CardStackLayoutManager;
+import com.yuyakaido.android.cardstackview.CardStackListener;
 import com.yuyakaido.android.cardstackview.CardStackView;
+import com.yuyakaido.android.cardstackview.Direction;
+import com.yuyakaido.android.cardstackview.Duration;
+import com.yuyakaido.android.cardstackview.RewindAnimationSetting;
+import com.yuyakaido.android.cardstackview.SwipeAnimationSetting;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class WearTrackScreen extends LocationTrackScreen implements View.OnClickListener {
+public class WearTrackScreen extends LocationTrackScreen implements View.OnClickListener, CardStackListener {
     private TextView toggleLabel;
 
     private TextView distanceLabel;
@@ -42,10 +54,12 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
     private Place currentPlace;
     private String currentAddress;
 
-    private ArrayList<TrackCardRecord> cardsData = new ArrayList<>();
-    private TrackCardsAdapter cardsAdapter;
+    private ArrayList<PhotoItem> cardsData = new ArrayList<>();
+    private PhotoItemAdapter cardsAdapter;
+    private CardStackLayoutManager manager;
     private CardStackView cardView;
 
+    private Location curLocation;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +67,8 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
 
         locationModel = ScrimitLocationModel.getInstance();
         locationModel.setLocationListener(this);
+        dataModel = ScrimitDataModel.getInstance("XXpqDBPmcYaKsh2hdjfrN1qEfSh1");
+        dataModel.listenData();
 
         setContentView(R.layout.wear_track_screen);
         initViews();
@@ -71,15 +87,17 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
         distanceLabel = findViewById(R.id.distance_label);
         timeLabel = findViewById(R.id.time_label);
         cardView = findViewById(R.id.card_stack_view);
-        cardsAdapter = new TrackCardsAdapter();
+        cardsAdapter = new PhotoItemAdapter();
         cardView.setLayoutManager(new CardStackLayoutManager(this));
         cardView.setAdapter(cardsAdapter);
-
+        manager = new CardStackLayoutManager(this, this);
+        cardView.setLayoutManager(manager);
 
         findViewById(R.id.toggle_btn).setOnClickListener(this);
         findViewById(R.id.back_button).setOnClickListener(this);
         findViewById(R.id.like_button).setOnClickListener(this);
         findViewById(R.id.skip_button).setOnClickListener(this);
+        findViewById(R.id.check_btn).setOnClickListener(this);
 
         updateHeader();
     }
@@ -87,16 +105,55 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.check_btn:
+                checkCurLocation();
+                break;
             case R.id.toggle_btn:
                 toggleTracking();
                 break;
             case R.id.back_button:
                 onBackPressed();
                 break;
+            case R.id.like_button:
+                likeItem();
+                break;
             case R.id.skip_button:
-                overlayLayout.setVisibility(View.GONE);
+                skipItem();
+                break;
+            case R.id.rewind_button:
+                rewindItem();
                 break;
         }
+    }
+
+    private void likeItem() {
+        SwipeAnimationSetting setting = new SwipeAnimationSetting.Builder()
+                .setDirection(Direction.Right)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(new DecelerateInterpolator())
+                .build();
+        manager.setSwipeAnimationSetting(setting);
+        cardView.swipe();
+    }
+
+    private void skipItem() {
+        SwipeAnimationSetting setting = new SwipeAnimationSetting.Builder()
+                .setDirection(Direction.Left)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(new DecelerateInterpolator())
+                .build();
+        manager.setSwipeAnimationSetting(setting);
+        cardView.swipe();
+    }
+
+    private void rewindItem() {
+        RewindAnimationSetting setting = new RewindAnimationSetting.Builder()
+                .setDirection(Direction.Bottom)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(new DecelerateInterpolator())
+                .build();
+        manager.setRewindAnimationSetting(setting);
+        cardView.rewind();
     }
 
     @Override
@@ -108,17 +165,19 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
     public void onTrackStarted() {
         super.onTrackStarted();
         toggleLabel.setText(locationModel.trackingNow ? R.string.stop_label : R.string.start_label);
+        findViewById(R.id.check_btn).setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onTrackEnded() {
         super.onTrackEnded();
         toggleLabel.setText(locationModel.trackingNow ? R.string.stop_label : R.string.start_label);
+        findViewById(R.id.check_btn).setVisibility(View.GONE);
     }
 
     @Override
     public void onLocationUpdate(Location location) {
-        checkCurPlace();
+        checkCurPlace(location);
         super.onLocationUpdate(location);
         updateFooter();
         updateHeader();
@@ -140,18 +199,30 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
         timeLabel.setText(locationModel.trackingNow ? locationModel.getTimerTime() : locationModel.getTime());
     }
 
-    private void checkCurPlace() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && locationInitialized) {
+    private void checkCurPlace(Location location) {
+        if (locationInitialized && (curLocation == null || curLocation.distanceTo(location) > 10)) {
+            double distance = curLocation != null ? curLocation.distanceTo(location) : 0;
+            curLocation = location;
+        }
+    }
+
+    private void checkCurLocation() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && locationInitialized) {
 
             ArrayList<Place.Field> placeFields = new ArrayList<>();
+            placeFields.add(Place.Field.ID);
             placeFields.add(Place.Field.NAME);
             placeFields.add(Place.Field.TYPES);
             placeFields.add(Place.Field.ADDRESS);
+            placeFields.add(Place.Field.LAT_LNG);
 
             FindCurrentPlaceRequest request = FindCurrentPlaceRequest.newInstance(placeFields);
             PlacesClient placesClient = Places.createClient(this);
+            uiHandler.sendEmptyMessage(UIHandler.MSG_SHOW_PROGRESS);
             Task<FindCurrentPlaceResponse> placeResponse = placesClient.findCurrentPlace(request);
             placeResponse.addOnCompleteListener(task -> {
+                uiHandler.sendEmptyMessage(UIHandler.MSG_HIDE_PROGRESS);
                 if (task.isSuccessful()){
                     FindCurrentPlaceResponse response = task.getResult();
                     if (response.getPlaceLikelihoods().size() > 0) {
@@ -186,47 +257,89 @@ public class WearTrackScreen extends LocationTrackScreen implements View.OnClick
     }
 
     private void updateOverlay(Place place) {
-        if (currentPlace != place) {
+        if (place != null) {
             currentPlace = place;
             String address = place != null ? place.getAddress() : "None";
             if (!address.equals(currentAddress)) {
                 currentAddress = address;
 
-                overlayLayout.setVisibility(currentPlace != null && checkPlace(currentPlace) ? View.VISIBLE : View.GONE);
+                cardsData = dataModel.getPhotoItems(place);
+                overlayLayout.setVisibility(currentPlace != null && cardsData.size() > 0 ? View.VISIBLE : View.GONE);
 
                 TextView placeTitle = findViewById(R.id.place_title);
                 placeTitle.setText(place != null ? place.getName() : getText(R.string.unknown));
-                cardsData = getSampleData();
                 cardsAdapter.changeData(cardsData);
             }
         }
     }
 
-    private boolean checkPlace(Place place) {
-        if (place != null) {
-            List<Place.Type> types = place.getTypes();
+    private void processResult(int position, boolean like) {
+        if (position < cardsData.size()) {
+            PhotoItem photoItem = cardsData.get(position);
+            PlaceItem item = dataModel.getPlaceItem(currentPlace.getId());
+            PlaceType type = dataModel.getPlaceType(currentPlace);
+            if (item != null) {
+                LikeData likeData = dataModel.getLikeData(dataModel.user.uid, item.id, null);
+                likeData.likeMap.put(photoItem.id, like);
+                dataModel.saveLikeData(likeData, new FirebaseDatabaseListener() {
+                    @Override
+                    public void onSuccess() {
 
-            if (types.contains(Place.Type.STORE)) {
-                return true;
+                    }
+
+                    @Override
+                    public void onFailure(DatabaseError error) {
+
+                    }
+                });
+            } else if (type != null) {
+                LikeData likeData = dataModel.getLikeData(dataModel.user.uid, null, type.id);
+                likeData.likeMap.put(photoItem.id, like);
+                dataModel.saveLikeData(likeData, new FirebaseDatabaseListener() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFailure(DatabaseError error) {
+
+                    }
+                });
             }
+        } else {
+            overlayLayout.setVisibility(View.GONE);
         }
-
-        return false;
     }
 
-    private ArrayList<TrackCardRecord> getSampleData() {
-        ArrayList<TrackCardRecord> result = new ArrayList<>();
+    @Override
+    public void onCardDragging(Direction direction, float ratio) {
 
-        result.add(new TrackCardRecord("grocery_1", R.drawable.grocery_1, "grocery 1"));
-        result.add(new TrackCardRecord("grocery_2", R.drawable.grocery_2, "grocery 2"));
-        result.add(new TrackCardRecord("grocery_3", R.drawable.grocery_3, "grocery 3"));
-        result.add(new TrackCardRecord("grocery_4", R.drawable.grocery_4, "grocery 4"));
-        result.add(new TrackCardRecord("grocery_5", R.drawable.grocery_5, "grocery 5"));
-        result.add(new TrackCardRecord("grocery_6", R.drawable.grocery_6, "grocery 6"));
-        result.add(new TrackCardRecord("grocery_7", R.drawable.grocery_7, "grocery 7"));
-        result.add(new TrackCardRecord("grocery_8", R.drawable.grocery_8, "grocery 8"));
-
-        return result;
     }
 
+    @Override
+    public void onCardSwiped(Direction direction) {
+        int position = manager.getTopPosition();
+        processResult(position, direction.equals(Direction.Right));
+    }
+
+    @Override
+    public void onCardRewound() {
+
+    }
+
+    @Override
+    public void onCardCanceled() {
+
+    }
+
+    @Override
+    public void onCardAppeared(View view, int position) {
+
+    }
+
+    @Override
+    public void onCardDisappeared(View view, int position) {
+
+    }
 }

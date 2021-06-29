@@ -131,6 +131,21 @@ public class FirebaseUtils {
         return result;
     }
 
+    public static HashMap<String, Boolean> getStrBooleanList(HashMap<String, Object> map, String key) {
+        HashMap<String, Boolean> result = new HashMap<String, Boolean>();
+
+        try {
+            HashMap<String, Object> data = (HashMap<String, Object>) map.get(key);
+
+            for (String item : data.keySet()) {
+                result.put(item, Boolean.parseBoolean(data.get(item).toString()));
+            }
+        } catch (Exception e) {
+            return result;
+        }
+        return result;
+    }
+
     public static HashMap<String, Integer> getStrIntegerList(HashMap<String, Object> map, String key) {
         HashMap<String, Integer> result = new HashMap<String, Integer>();
 

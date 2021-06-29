@@ -14,11 +14,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.annotations.NotNull;
+import com.mproduction.watchplaces.model.ScrimitDataModel;
 import com.mproduction.watchplaces.model.ScrimitLocationModel;
 import com.mproduction.watchplaces.ui.template.ArenaActivity;
 
 public class LocationMapScreen extends ArenaActivity implements ScrimitLocationModel.ScrimitLocationListener, OnMapReadyCallback {
     protected ScrimitLocationModel locationModel;
+    protected ScrimitDataModel dataModel;
 
     protected MapView mMapView;
     protected GoogleMap mGoogleMap;
@@ -58,6 +60,7 @@ public class LocationMapScreen extends ArenaActivity implements ScrimitLocationM
         mMapView.onDestroy();
         super.onDestroy();
         locationModel.clearListener();
+        ScrimitDataModel.clearInstance();
     }
 
     @Override
